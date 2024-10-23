@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dmitry Koldyaev - Frontend Developer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1000px;
+      background-color: white;
+      padding: 25px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #4a4a4a;
+      margin-bottom: 5px;
+      margin-top: 0;
+    }
+
+    h2 {
+      font-size: 1.5em;
+      color: #717171;
+      margin-bottom: 20px;
+      font-weight: normal;
+      margin-top: 0;
+    }
+
+    .header,
+    .main-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .contact-info {
+      text-align: right;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    .contact-info p {
+      margin: 5px 0;
+    }
+
+    .contact-info a {
+      color: #0077b5;
+      text-decoration: none;
+    }
+
+    .section-title {
+      font-size: 1.5em;
+      margin-top: 30px;
+      margin-bottom: 20px;
+      color: #333;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #ececec;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    .skills,
+    .languages {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .skill-badge,
+    .language-level {
+      background-color: #f0f0f0;
+      border-radius: 20px;
+      padding: 8px 15px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    .job {
+      margin-bottom: 25px;
+    }
+
+    .job-header {
+      font-size: 1.3em;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .job-company,
+    .job-company:visited,
+    .job-company:active,
+    .job-company:hover {
+      font-size: 1em;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .job-company:active,
+    .job-company:hover {
+      text-decoration: underline;
+    }
+
+    .job-dates {
+      font-style: italic;
+      font-size: 0.75em;
+      color: #777;
+    }
+
+    .job-place {
+      font-style: italic;
+      font-size: 0.75em;
+    }
+
+    .achievements {
+      list-style-type: none;
+      padding-left: 0;
+      margin-top: 10px;
+    }
+
+    .achievements li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 5px;
+    }
+
+    .achievements li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #4a90e2;
+      font-size: 1.2em;
+    }
+
+    .languages .language-level {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .language-level p {
+      margin: 0;
+    }
+
+    .language-level .dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dots span {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background-color: #ccc;
+      border-radius: 50%;
+    }
+
+    .dots .filled {
+      background-color: #4a90e2;
+    }
+
+    .interests {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Dmitry Koldyaev</h1>
+        <h2>Frontend Developer</h2>
+        <p>Skilled front-end developer with over 5 years of commercial experience and a strong background in back-end
+          development and testing, cross-browser and performance optimization. Participated in the development and
+          maintenance of customer products in a Scrum team. Conducted knowledge transfer sessions for new team members
+          while also acting as a supervisor.</p>
+      </div>
+      <div class="contact-info">
+        <p><a href="mailto:dkoldyaev@gmail.com">dkoldyaev@gmail.com</a></p>
+        <p><a href="tel:+995551179285" target="_blank">+995 551 17 92 85</a></p>
+        <p>Tbilisi, Georgia<br />able to relocation</p>
+        <p><a href="https://www.linkedin.com/in/koldyaev-dmitry-b3392529/" target="_blank">LinkedIn Profile</a></p>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div style="flex: 2;">
+        <div class="section-title">Work Experience</div>
+
+        <div class="job">
+          <h3 class="job-header">Front-End Developer - <a href="https://pinsteps.com/" target="_blank"
+              class="job-company">Pinsteps</a>
+            <br /><span class="job-dates">(10/2022 - Present)</span> <i class="job-place">Israel</i>
+          </h3>
+          <ul class="achievements">
+            <li>Led the development of a tourist website constructor tailored for government institutions.</li>
+            <li>Oversaw the entire development process, from task definition to testing final solutions.</li>
+            <li>Performed meticulous control and coordination to ensure the project's success.</li>
+          </ul>
+        </div>
+
+        <div class="job">
+          <h3 class="job-header">Front-End Developer - <a href="https://tochka.com/" target="_blank"
+              class="job-company">Tochka Bank</a>
+            <br /><span class="job-dates">(06/2019 - 06/2022)</span> <i class="job-place">Yekaterinburg, Russia</i>
+          </h3>
+          <ul class="achievements">
+            <li>Developed and tested a bulletproof UI kit for the Internet banking platform within the infrastructure
+              team. Achieved 100% test coverage, including comprehensive screenshot tests.</li>
+            <li>Participated in migrating the platform from Angular to React, ensuring seamless integration and
+              reliability.</li>
+            <li>Contributed to a CRM solution from prototyping to a full-fledged application, reducing client handling
+              time by 8x.</li>
+          </ul>
+        </div>
+
+        <div class="job">
+          <h3 class="job-header">FullStack Developer - <span class="job-company">URA.RU</span>
+            <br /><span class="job-dates">(06/2015 - 06/2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
+          </h3>
+          <ul class="achievements">
+            <li>Transitioned a website from server-side rendering in PHP to a single-page application (SPA) with
+              AngularJS and Django.</li>
+            <li>Developed a high-performance cache clearing and warming system for an Angular-based website.</li>
+            <li>Improved administrative tools to optimize journalists' workflows.</li>
+          </ul>
+        </div>
+
+        <div class="section-title">Volunteer Experience</div>
+        <h3 class="job-header">Installer, Artist's Assistant - <span class="job-company">Ural Industrial Biennial of
+            Contemporary Art</span>
+          <br /><span class="job-dates">(2012 - 2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
+        </h3>
+        <ul class="achievements">
+          <li>Assisted in exhibition installation and artist support.</li>
+          <li>Conducted tours and worked with people with disabilities.</li>
+        </ul>
+      </div>
+
+      <div style="flex: 1;">
+        <div class="section-title">Skills</div>
+        <div class="skills">
+          <div class="skill-badge">JS (Core, TypeScript)</div>
+          <div class="skill-badge">ReactJS (NextJS)</div>
+          <div class="skill-badge">Angular</div>
+          <div class="skill-badge">Redux</div>
+          <div class="skill-badge">RxJS</div>
+          <div class="skill-badge">Zustand</div>
+          <div class="skill-badge">Jest</div>
+          <div class="skill-badge">ViTest</div>
+          <div class="skill-badge">Git</div>
+          <div class="skill-badge">Nginx</div>
+          <div class="skill-badge">CI/CD</div>
+          <div class="skill-badge">Storybook</div>
+          <div class="skill-badge">Figma</div>
+          <div class="skill-badge">Agile</div>
+          <div class="skill-badge">Scrum</div>
+        </div>
+
+        <div class="section-title">Languages</div>
+        <div class="languages">
+          <div class="language-level">
+            <p>English</p>
+            <div class="dots">
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span></span>
+            </div>
+          </div>
+          <div class="language-level">
+            <p>Russian</p>
+            <div class="dots">
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Interests</div>
+        <ul class="achievements interests">
+          <li>Contemporary art</li>
+          <li>Photography</li>
+        </ul>
+
+
+        <div class="section-title">Education</div>
+        <p><b>Math and Mechanic</b><br>Ural State University - 2005-2008<br>Yekaterinburg</p>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
