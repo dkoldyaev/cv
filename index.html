@@ -16,7 +16,7 @@
 
     .container {
       max-width: 1000px;
-      padding: 25px 20px 20px;
+      padding: 20px 20px 0;
       display: flex;
       flex-direction: column;
       align-items: stretch;
@@ -38,12 +38,16 @@
       margin-top: 0;
     }
 
-    .header,
     .main-content {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 20px;
+      gap: 30px;
+    }
+
+    .header,
+    .contact-info {
+      min-height: 216px;
     }
 
     .contact-info {
@@ -105,10 +109,10 @@
       margin-bottom: 5px;
       color: #333;
       line-height: 1;
-      margin-top: 20px;
+      margin-top: 29px;
     }
 
-    .job-header:first-child {
+    .section-title+.job-header {
       margin-top: 0;
     }
 
@@ -117,7 +121,7 @@
     .job-company:active,
     .job-company:hover {
       font-size: 1em;
-      color: inherit;
+      color: #979797;
       text-decoration: none;
     }
 
@@ -192,24 +196,27 @@
 
 <body>
   <div class="container">
-    <div class="header">
+    <div class="main-content">
       <div>
-        <h1>Dmitry Koldyaev</h1>
-        <h2>Frontend Developer</h2>
-        <p>Skilled front-end developer with over 5 years of commercial experience and a strong background in back-end
-          development and testing, cross-browser and performance optimization. Participated in the development and
-          maintenance of customer products in a Scrum team. Conducted knowledge transfer sessions for new team members
-          while also acting as a supervisor.</p>
+        <div class="header">
+          <h1>Dmitry Koldyaev</h1>
+          <h2>Frontend Developer</h2>
+          <p>Skilled front-end developer with over 9 years of commercial experience and a strong background in back-end
+            development and testing, cross-browser and performance optimization. Participated in the development and
+            maintenance of customer products in a Scrum team. Conducted knowledge transfer sessions for new team members
+            while also acting as a supervisor.</p>
+        </div>
       </div>
-      <div class="contact-info">
-        <p><a href="mailto:dkoldyaev@gmail.com">dkoldyaev@gmail.com</a></p>
-        <p>telegram: <a href="https://t.me/dkoldyaev">dkoldyaev</a></p>
-        <p><a href="tel:+995551179285" target="_blank">+995 551 17 92 85</a></p>
-        <p>Tbilisi, Georgia<br />able to relocation</p>
-        <p><a href="https://www.linkedin.com/in/koldyaev-dmitry-b3392529/" target="_blank">LinkedIn Profile</a></p>
+      <div>
+        <div class="contact-info">
+          <p><a href="mailto:dkoldyaev@gmail.com">dkoldyaev@gmail.com</a></p>
+          <p>telegram: <a href="https://t.me/dkoldyaev">dkoldyaev</a></p>
+          <p><a href="tel:+995551179285" target="_blank">+995 551 17 92 85</a></p>
+          <p>Tbilisi, Georgia<br />able to relocation</p>
+          <p><a href="https://www.linkedin.com/in/koldyaev-dmitry-b3392529/" target="_blank">LinkedIn Profile</a></p>
+        </div>
       </div>
     </div>
-
     <div class="main-content">
       <div style="flex: 2;">
         <h2 class="section-title">Work Experience</h2>
@@ -219,9 +226,15 @@
           <br /><span class="job-dates">(10/2022 - Present)</span> <i class="job-place">Israel</i>
         </h3>
         <ul class="achievements">
-          <li>Led the development of a tourist website constructor tailored for government institutions.</li>
-          <li>Oversaw the entire development process, from task definition to testing final solutions.</li>
-          <li>Performed meticulous control and coordination to ensure the project's success.</li>
+          <li>Wrote a hundred independent version-controlled modules for constructing dynamic web sites requiring less
+            time and space for modifications.</li>
+          <li>Established the first version of the website that is directly interacting with a client in 3 months; this
+            is important during the presentation of the product to potential investors.</li>
+          <li>Developed a visual page constructor, enabling users to design and arrange web content regardless of the
+            programmer’s help.</li>
+          <li>Migrated from pure-react to NextJS for better SEO performance.</li>
+          <li>Provided a static site generation system with dynamic page regeneration, ensuring high-performance content
+            delivery to the client.</li>
         </ul>
 
         <h3 class="job-header">Front-End Developer - <a href="https://tochka.com/" target="_blank"
@@ -229,34 +242,36 @@
           <br /><span class="job-dates">(06/2019 - 06/2022)</span> <i class="job-place">Yekaterinburg, Russia</i>
         </h3>
         <ul class="achievements">
-          <li>Developed and tested a bulletproof UI kit for the Internet banking platform within the infrastructure
-            team. Achieved 100% test coverage, including comprehensive screenshot tests.</li>
-          <li>Participated in migrating the platform from Angular to React, ensuring seamless integration and
-            reliability.</li>
-          <li>Contributed to a CRM solution from prototyping to a full-fledged application, reducing client handling
-            time by 8x.</li>
+          <li>Had a part of UI-Kit which was spreaded for approximately one hundred of the independent
+            microfrontends</li>
+          <li>Covered the whole code of UI-Kit by unit and screenshot tests for make it really bulletproofed</li>
+          <li>Design and release the internal CRM system for providing loans. It cut the manager's time per client’s
+            loan 8 times.</li>
+          <li>Assisted in decoupling a dozen services from a monolithic on Angular and
+            integrating them with React to form microfrontends as a means of improved modularity and scalability.</li>
+          <li>Implemented a grading system and an application for evaluations for between 30 frontend developers to
+            enhance performance evaluation.</li>
+          <li>As a facilitator and secretary for several months, In charge of improving the efficiency of the work and
+            simplifying communication within the team.</li>
+          <li>Provided the basement for builfing independent admin-side microfrontends</li>
         </ul>
 
         <h3 class="job-header">FullStack Developer - <span class="job-company">URA.RU</span>
           <br /><span class="job-dates">(06/2015 - 06/2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
         </h3>
-
         <ul class="achievements">
-          <li>Transitioned a website from server-side rendering in PHP to a single-page application (SPA) with
-            AngularJS and Django.</li>
-          <li>Developed a high-performance cache clearing and warming system for an Angular-based website.</li>
-          <li>Improved administrative tools to optimize journalists' workflows.</li>
-        </ul>
-
-        <h2 class="section-title">Volunteer Experience</h2>
-        <h3 class="job-header">Installer, Artist's Assistant - <span class="job-company">Ural Industrial Biennial of
-            Contemporary Art</span>
-          <br /><span class="job-dates">(2012 - 2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
-        </h3>
-
-        <ul class="achievements">
-          <li>Assisted in exhibition installation and artist support.</li>
-          <li>Conducted tours and worked with people with disabilities.</li>
+          <li>Reduced legacy code by 90% through a seamless migration to Django, streamlining the codebase and improving
+            maintainability.</li>
+          <li>Built a live-streaming system that supported tens of thousands of concurrent users, ensuring stability
+            during high-demand events.</li>
+          <li>Built a hight-perfonamced system for clearing and rewarming cache.</li>
+          <li>Website handels massive traffic loads even under DDOS attacks</li>
+          <li>Successfully migrated hundreds of thousands of articles to a new data format while preserving SEO ranking,
+            avoiding any impact on search visibility.</li>
+          <li>Made a System of version control for articles which minimized the errors/misprints of the Journalist
+            and gives a history of changes with the option to switch between the changes.</li>
+          <li>Designed and realized the process of continue migration from old-school PHP website to modern moduled SPA
+          </li>
         </ul>
       </div>
 
@@ -286,14 +301,20 @@
           <div class="skill-badge">Russian</div>
         </div>
 
-        <h2 class="section-title">Interests</h2>
-        <div class="skills">
-          <div class="skill-badge">Contemporary art</div>
-          <div class="skill-badge">Photography</div>
-        </div>
-
         <h2 class="section-title">Education</h2>
         <p><b>Math and Mechanic</b><br>Ural State University - 2005-2008<br>Yekaterinburg</p>
+
+        <h2 class="section-title">Volunteer Experience</h2>
+        <h3 class="job-header">Biennial of Contemporary Art</h3>
+        <div class="job-company">Installer, Artist's Assistant</div>
+        <div>
+          <span class="job-dates">(2012 - 2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
+        </div>
+
+        <ul class="achievements">
+          <li>Assisted in exhibition installation and artists support.</li>
+          <li>Conducted tours and worked with people with disabilities.</li>
+        </ul>
       </div>
     </div>
   </div>
