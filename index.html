@@ -84,7 +84,17 @@
       gap: 10px;
     }
 
-    .skill-badge,
+
+    .skill-badge::before {
+      display: inline-block;
+      content: ' #';
+      opacity: 0.3;
+    }
+
+    .skill-badge::first-line:before {
+      content: none;
+    }
+
     .language-level {
       background-color: #f0f0f0;
       border-radius: 20px;
@@ -208,7 +218,7 @@
 
     <div class="main-content">
       <div style="flex: 2;">
-        <div class="section-title">Work Experience</div>
+        <h2 class="section-title">Work Experience</h2>
 
         <h3 class="job-header">Front-End Developer - <a href="https://pinsteps.com/" target="_blank"
             class="job-company">Pinsteps</a>
@@ -219,102 +229,98 @@
           <li>Oversaw the entire development process, from task definition to testing final solutions.</li>
           <li>Performed meticulous control and coordination to ensure the project's success.</li>
         </ul>
+
+        <h3 class="job-header">Front-End Developer - <a href="https://tochka.com/" target="_blank"
+            class="job-company">Tochka Bank</a>
+          <br /><span class="job-dates">(06/2019 - 06/2022)</span> <i class="job-place">Yekaterinburg, Russia</i>
+        </h3>
+        <ul class="achievements">
+          <li>Developed and tested a bulletproof UI kit for the Internet banking platform within the infrastructure
+            team. Achieved 100% test coverage, including comprehensive screenshot tests.</li>
+          <li>Participated in migrating the platform from Angular to React, ensuring seamless integration and
+            reliability.</li>
+          <li>Contributed to a CRM solution from prototyping to a full-fledged application, reducing client handling
+            time by 8x.</li>
+        </ul>
+
+        <h3 class="job-header">FullStack Developer - <span class="job-company">URA.RU</span>
+          <br /><span class="job-dates">(06/2015 - 06/2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
+        </h3>
+
+        <ul class="achievements">
+          <li>Transitioned a website from server-side rendering in PHP to a single-page application (SPA) with
+            AngularJS and Django.</li>
+          <li>Developed a high-performance cache clearing and warming system for an Angular-based website.</li>
+          <li>Improved administrative tools to optimize journalists' workflows.</li>
+        </ul>
+
+        <h2 class="section-title">Volunteer Experience</h2>
+        <h3 class="job-header">Installer, Artist's Assistant - <span class="job-company">Ural Industrial Biennial of
+            Contemporary Art</span>
+          <br /><span class="job-dates">(2012 - 2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
+        </h3>
+
+        <ul class="achievements">
+          <li>Assisted in exhibition installation and artist support.</li>
+          <li>Conducted tours and worked with people with disabilities.</li>
+        </ul>
       </div>
 
-      <h3 class="job-header">Front-End Developer - <a href="https://tochka.com/" target="_blank"
-          class="job-company">Tochka Bank</a>
-        <br /><span class="job-dates">(06/2019 - 06/2022)</span> <i class="job-place">Yekaterinburg, Russia</i>
-      </h3>
-      <ul class="achievements">
-        <li>Developed and tested a bulletproof UI kit for the Internet banking platform within the infrastructure
-          team. Achieved 100% test coverage, including comprehensive screenshot tests.</li>
-        <li>Participated in migrating the platform from Angular to React, ensuring seamless integration and
-          reliability.</li>
-        <li>Contributed to a CRM solution from prototyping to a full-fledged application, reducing client handling
-          time by 8x.</li>
-      </ul>
-    </div>
-
-    <div class="job">
-      <h3 class="job-header">FullStack Developer - <span class="job-company">URA.RU</span>
-        <br /><span class="job-dates">(06/2015 - 06/2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
-      </h3>
-
-      <ul class="achievements">
-        <li>Transitioned a website from server-side rendering in PHP to a single-page application (SPA) with
-          AngularJS and Django.</li>
-        <li>Developed a high-performance cache clearing and warming system for an Angular-based website.</li>
-        <li>Improved administrative tools to optimize journalists' workflows.</li>
-      </ul>
-    </div>
-
-    <div class="section-title">Volunteer Experience</div>
-    <h3 class="job-header">Installer, Artist's Assistant - <span class="job-company">Ural Industrial Biennial of
-        Contemporary Art</span>
-      <br /><span class="job-dates">(2012 - 2019)</span> <i class="job-place">Yekaterinburg, Russia</i>
-    </h3>
-
-    <ul class="achievements">
-      <li>Assisted in exhibition installation and artist support.</li>
-      <li>Conducted tours and worked with people with disabilities.</li>
-    </ul>
-  </div>
-
-  <div style="flex: 1;">
-    <div class="section-title">Skills</div>
-    <div class="skills">
-      <div class="skill-badge">JS (Core, TypeScript)</div>
-      <div class="skill-badge">ReactJS (NextJS)</div>
-      <div class="skill-badge">Angular</div>
-      <div class="skill-badge">Redux</div>
-      <div class="skill-badge">RxJS</div>
-      <div class="skill-badge">Zustand</div>
-      <div class="skill-badge">Jest</div>
-      <div class="skill-badge">ViTest</div>
-      <div class="skill-badge">Git</div>
-      <div class="skill-badge">Nginx</div>
-      <div class="skill-badge">CI/CD</div>
-      <div class="skill-badge">Storybook</div>
-      <div class="skill-badge">Figma</div>
-      <div class="skill-badge">Agile</div>
-      <div class="skill-badge">Scrum</div>
-    </div>
-
-    <div class="section-title">Languages</div>
-    <div class="languages">
-      <div class="language-level">
-        <p>English</p>
-        <div class="dots">
-          <span class="filled"></span>
-          <span class="filled"></span>
-          <span class="filled"></span>
-          <span class="filled"></span>
-          <span></span>
+      <div style="flex: 1;">
+        <h2 class="section-title">Skills</h2>
+        <div class="skills">
+          <div class="skill-badge">JS (Core, TypeScript)</div>
+          <div class="skill-badge">ReactJS (NextJS)</div>
+          <div class="skill-badge">Angular</div>
+          <div class="skill-badge">Redux</div>
+          <div class="skill-badge">RxJS</div>
+          <div class="skill-badge">Zustand</div>
+          <div class="skill-badge">Jest</div>
+          <div class="skill-badge">ViTest</div>
+          <div class="skill-badge">Git</div>
+          <div class="skill-badge">Nginx</div>
+          <div class="skill-badge">CI/CD</div>
+          <div class="skill-badge">Storybook</div>
+          <div class="skill-badge">Figma</div>
+          <div class="skill-badge">Agile</div>
+          <div class="skill-badge">Scrum</div>
         </div>
-      </div>
-      <div class="language-level">
-        <p>Russian</p>
-        <div class="dots">
-          <span class="filled"></span>
-          <span class="filled"></span>
-          <span class="filled"></span>
-          <span class="filled"></span>
-          <span class="filled"></span>
+
+        <div class="section-title">Languages</div>
+        <div class="languages">
+          <div class="language-level">
+            <p>English</p>
+            <div class="dots">
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span></span>
+            </div>
+          </div>
+          <div class="language-level">
+            <p>Russian</p>
+            <div class="dots">
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+              <span class="filled"></span>
+            </div>
+          </div>
         </div>
+
+        <div class="section-title">Interests</div>
+        <ul class="achievements interests">
+          <li>Contemporary art</li>
+          <li>Photography</li>
+        </ul>
+
+
+        <div class="section-title">Education</div>
+        <p><b>Math and Mechanic</b><br>Ural State University - 2005-2008<br>Yekaterinburg</p>
       </div>
     </div>
-
-    <div class="section-title">Interests</div>
-    <ul class="achievements interests">
-      <li>Contemporary art</li>
-      <li>Photography</li>
-    </ul>
-
-
-    <div class="section-title">Education</div>
-    <p><b>Math and Mechanic</b><br>Ural State University - 2005-2008<br>Yekaterinburg</p>
-  </div>
-  </div>
   </div>
 </body>
 
