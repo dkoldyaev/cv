@@ -1,0 +1,23 @@
+{
+  "name": "cv",
+  "version": "1.0.0",
+  "description": "Dmitry Koldyaev CV with admin panel, markdown rendering, JSON-LD, and dynamic CV creation API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dkoldyaev/cv.git"
+  },
+  "keywords": ["cv", "resume", "markdown", "json-ld"],
+  "author": "dkoldyaev",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "marked": "^18.1.2"
+  }
+}
