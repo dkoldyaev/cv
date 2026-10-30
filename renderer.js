@@ -256,5 +256,6 @@ function escapeHtml(str) {
 
 module.exports = {
   extractTitleAndJsonLd,
-  renderCvHtml
+  renderCvHtml,
+  escapeHtml
 };

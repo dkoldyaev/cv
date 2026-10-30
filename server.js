@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const db = require('./database');
-const { extractTitleAndJsonLd, renderCvHtml } = require('./renderer');
+const { extractTitleAndJsonLd, renderCvHtml, escapeHtml } = require('./renderer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
