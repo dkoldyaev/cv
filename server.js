@@ -9,6 +9,7 @@ const addFormats = require('ajv-formats');
 const { renderCvHtml, extractTitleAndJsonLd } = require('./renderer');
 const { generatePdfFromHtml } = require('./pdf');
 const { jsonToMarkdown } = require('./converter');
+const { generateOpenApiSpec, renderSwaggerUiHtml } = require('./openapi');
 const storage = require('./storage');
 
 const app = express();
@@ -298,13 +299,32 @@ app.get(['/schema.json', '/api/schema'], (req, res) => {
 });
 
 // -------------------------------------------------------------
+// OPENAPI DOCUMENTATION ENDPOINTS (Publicly accessible)
+// -------------------------------------------------------------
+app.get('/openapi.json', (req, res) => {
+  setNoCache(res);
+  const host = req.get('host');
+  const proto = req.get('x-forwarded-proto') || req.protocol;
+  const baseUrl = `${proto}://${host}`;
+  const spec = generateOpenApiSpec(baseUrl);
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.send(JSON.stringify(spec, null, 2));
+});
+
+app.get(['/api/docs', '/docs'], (req, res) => {
+  setNoCache(res);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(renderSwaggerUiHtml('/openapi.json'));
+});
+
+// -------------------------------------------------------------
 // DYNAMIC CV ROUTES BY UUID: /:id, /:id.md, /:id.json, /:id.pdf
 // -------------------------------------------------------------
 
 // 1. UUID HTML page
 app.get('/:id', (req, res, next) => {
   const id = req.params.id;
-  if (id === 'favicon.ico' || id === 'admin' || id === 'api' || id === 'cv' || id === 'jsonld' || id === 'legacy') {
+  if (id === 'favicon.ico' || id === 'admin' || id === 'api' || id === 'cv' || id === 'jsonld' || id === 'legacy' || id === 'docs' || id === 'openapi.json') {
     return next();
   }
 
@@ -680,6 +700,7 @@ app.get('/admin', checkAdminAuth, (req, res) => {
       📄 <span>CV Management Dashboard (Static Files)</span>
     </div>
     <div class="header-links">
+      <a href="/api/docs" target="_blank" style="color: #68d391; font-weight: 500;">📖 OpenAPI Docs ↗</a>
       <a href="${editId === 'root' ? '/' : `/${editId}`}" target="_blank">View Live CV ↗</a>
       <a href="${editId === 'root' ? '/cv.pdf' : `/${editId}.pdf`}" target="_blank">PDF ↗</a>
       <a href="${editId === 'root' ? '/cv.md' : `/${editId}.md`}" target="_blank">Markdown ↗</a>
