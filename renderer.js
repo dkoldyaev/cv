@@ -797,7 +797,7 @@ function renderGenericSection(section) {
   return `        <h2 class="section-title">${inlineMarkdown(section.title)}</h2>\n${contentHtml}`;
 }
 
-function renderCvHtml({ markdown, title, jsonLd, rawMdUrl, editUrl, id }) {
+function renderCvHtml({ markdown, title, jsonLd, rawMdUrl, pdfUrl, jsonUrl, editUrl, id, showAdmin = false }) {
   const jsonLdString = typeof jsonLd === 'string' ? jsonLd : JSON.stringify(jsonLd, null, 2);
   const parsed = parseCvMarkdown(markdown || '');
   
@@ -1074,7 +1074,7 @@ ${jsonLdString}
 
     @media print {
       .top-actions {
-        display: none;
+        display: none !important;
       }
     }
   </style>
@@ -1082,8 +1082,10 @@ ${jsonLdString}
 
 <body>
   <div class="top-actions">
-    ${rawMdUrl ? `<a href="${rawMdUrl}" target="_blank">📄 View Markdown (.md)</a>` : ''}
-    ${editUrl ? `<a href="${editUrl}">✏️ Edit in Admin</a>` : ''}
+    ${pdfUrl ? `<a href="${pdfUrl}" target="_blank">📥 PDF</a>` : ''}
+    ${rawMdUrl ? `<a href="${rawMdUrl}" target="_blank">📄 Markdown</a>` : ''}
+    ${jsonUrl ? `<a href="${jsonUrl}" target="_blank">{ } JSON</a>` : ''}
+    ${(showAdmin && editUrl) ? `<a href="${editUrl}">✏️ Edit in Admin</a>` : ''}
   </div>
   <div class="container">
     <div class="main-content">

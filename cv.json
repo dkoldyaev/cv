@@ -1,0 +1,204 @@
+{
+  "name": "Dmitry Koldyaev",
+  "headline": "Frontend Developer",
+  "summary": "Front-end developer with over 10 years of commercial experience. Main stack is React, TypeScript and Next.js, with additional experience in back-end development, testing, browser compatibility and performance optimization. Worked on customer products in Scrum teams, helped onboard new team members and shared technical knowledge inside the team.",
+  "contact": {
+    "email": "dkoldyaev@gmail.com",
+    "phone": "+34 674 82 29 94",
+    "location": {
+      "city": "Terrassa",
+      "region": "Barcelona",
+      "country": "Spain"
+    },
+    "links": [
+      {
+        "label": "Telegram",
+        "url": "https://t.me/dkoldyaev"
+      },
+      {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/koldyaev-dmitry-b3392529/"
+      }
+    ]
+  },
+  "workExperience": [
+    {
+      "id": "mygutachter",
+      "title": "Full Stack Developer",
+      "company": {
+        "name": "MyGutachter GmbH",
+        "url": "https://mygutachter.de/"
+      },
+      "employmentType": "freelance",
+      "startDate": "2026-02",
+      "endDate": "2026-09",
+      "location": {
+        "city": null,
+        "country": "Germany"
+      },
+      "summary": "Worked on integration between two isolated enterprise platforms, deployment automation and infrastructure security. The main task was to build data synchronization that could recover from failures and keep damage cases consistent between both systems.",
+      "highlights": [
+        "Designed and implemented data synchronization for damage cases between two isolated platforms.",
+        "Built monitoring for pending and stuck synchronization tasks, with tools to detect and resolve them.",
+        "Used Mercure for real-time data synchronization and live updates in the client interface.",
+        "Configured CI/CD pipelines with automatic preview deployments for QA testing and feature demos.",
+        "Worked on infrastructure security: protection of users' PII and hardening servers after malware-related security issues."
+      ]
+    },
+    {
+      "id": "easysend",
+      "title": "Front-End Developer",
+      "company": {
+        "name": "Easysend",
+        "url": "https://www.easysend.io/"
+      },
+      "employmentType": "unspecified",
+      "startDate": "2025-02",
+      "endDate": "2026-02",
+      "location": {
+        "city": null,
+        "country": "Israel"
+      },
+      "summary": null,
+      "highlights": [
+        "Supported and upgraded a drag-and-drop UI builder with complex features in the no-code platform to design customer journeys.",
+        "Added major editor features: action history (undo/redo), form cloning and reusable templates.",
+        "Worked with product and UX teams on new functionality based on real customer feedback.",
+        "Maintained the legacy Ember.js application and gradually moved parts of it to newer components.",
+        "Maintained unit and integration tests for the builder and related UI flows.",
+        "Refactored UI components when they became hard to change or reuse.",
+        "Participated in building a system of virtualized client environments.",
+        "Developed an AI-based document processing component for EasySend's no-code platform."
+      ]
+    },
+    {
+      "id": "pinsteps",
+      "title": "Front-End Developer",
+      "company": {
+        "name": "Pinsteps",
+        "url": "https://pinsteps.com/"
+      },
+      "employmentType": "unspecified",
+      "startDate": "2022-10",
+      "endDate": "2025-02",
+      "location": {
+        "city": null,
+        "country": "Israel"
+      },
+      "summary": null,
+      "highlights": [
+        "Wrote a hundred independent version-controlled modules for constructing dynamic web sites requiring less time and space for modifications.",
+        "Established the first version of the website that is directly interacting with a client in 3 months; this is important during the presentation of the product to potential investors.",
+        "Developed a visual page constructor, enabling users to design and arrange web content regardless of the programmer’s help.",
+        "Migrated from pure-react to NextJS for better SEO performance.",
+        "Provided a static site generation system with dynamic page regeneration, ensuring high-performance content delivery to the client."
+      ]
+    },
+    {
+      "id": "tochka",
+      "title": "Front-End Developer",
+      "company": {
+        "name": "Tochka Bank",
+        "url": "https://tochka.com/"
+      },
+      "employmentType": "unspecified",
+      "startDate": "2019-06",
+      "endDate": "2022-06",
+      "location": {
+        "city": "Yekaterinburg",
+        "country": "Russia"
+      },
+      "summary": null,
+      "highlights": [
+        "Had a part of UI-Kit which was spread for approximately one hundred of the independent microfrontends",
+        "Covered the whole code of UI-Kit by unit and screenshot tests for make it really bulletproof",
+        "Design and release the internal CRM system for providing loans. It cut the manager's time per client’s loan 8 times.",
+        "Assisted in moving about a dozen services from an Angular monolith to independent React microfrontends.",
+        "Implemented a grading system and an internal evaluation application for about 30 frontend developers.",
+        "As a facilitator and secretary for several months, In charge of improving the efficiency of the work and simplifying communication within the team.",
+        "Provided the basement for building independent admin-side microfrontends"
+      ]
+    },
+    {
+      "id": "uraru",
+      "title": "FullStack Developer",
+      "company": {
+        "name": "URA.RU",
+        "url": null
+      },
+      "employmentType": "unspecified",
+      "startDate": "2015-06",
+      "endDate": "2019-06",
+      "location": {
+        "city": "Yekaterinburg",
+        "country": "Russia"
+      },
+      "summary": null,
+      "highlights": [
+        "Reduced legacy code by about 90% while migrating the project from PHP to Django.",
+        "Built a live-streaming system used by tens of thousands of concurrent users during major events.",
+        "Built a high-performance system for clearing and rewarming cache.",
+        "Website handles massive traffic loads even under DDOS attacks",
+        "Migrated hundreds of thousands of articles to a new data format without losing their SEO positions.",
+        "Made a System of version control for articles which minimized the errors/misprints made by journalists and gives a history of changes with the option to switch between the changes.",
+        "Designed and realized the process of ontinuous migration from old-school PHP website to modern moduled SPA"
+      ]
+    }
+  ],
+  "skills": [
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Next.js",
+    "Angular",
+    "Redux",
+    "RxJS",
+    "Zustand",
+    "Jest",
+    "Vitest",
+    "PHP",
+    "Symfony",
+    "Python",
+    "Git",
+    "Nginx",
+    "CI/CD",
+    "Storybook",
+    "Figma",
+    "Agile",
+    "Scrum"
+  ],
+  "languages": [
+    "English",
+    "Russian",
+    "Spanish"
+  ],
+  "education": [
+    {
+      "institution": "Ural State University",
+      "fieldOfStudy": "Math and Mechanic",
+      "startDate": "2005",
+      "endDate": "2008",
+      "location": {
+        "city": "Yekaterinburg",
+        "country": "Russia"
+      },
+      "degree": null
+    }
+  ],
+  "volunteerExperience": [
+    {
+      "organization": "Biennial of Contemporary Art",
+      "role": "Installer, Artist's Assistant",
+      "startDate": "2012",
+      "endDate": "2019",
+      "location": {
+        "city": "Yekaterinburg",
+        "country": "Russia"
+      },
+      "highlights": [
+        "Assisted in exhibition installation and artists support.",
+        "Guided tours designed for people with disabilities."
+      ]
+    }
+  ]
+}

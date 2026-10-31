@@ -1,0 +1,330 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Developer CV",
+  "description": "Application-friendly, domain-independent CV structure. Dates are YYYY-MM or YYYY, as displayed on the original CV. Unknown values are null, not inferred.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "headline",
+    "summary",
+    "contact",
+    "workExperience",
+    "skills",
+    "languages",
+    "education",
+    "volunteerExperience"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "headline": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string"
+    },
+    "contact": {
+      "$ref": "#/$defs/contact"
+    },
+    "workExperience": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/work"
+      },
+      "uniqueItems": true
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "education": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/education"
+      }
+    },
+    "volunteerExperience": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/volunteer"
+      }
+    }
+  },
+  "$defs": {
+    "year": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$"
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+    },
+    "nullableString": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "city",
+        "country"
+      ],
+      "properties": {
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "country": {
+          "type": "string",
+          "minLength": 1
+        },
+        "region": {
+          "type": "string"
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "url"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        }
+      }
+    },
+    "company": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "url"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "phone",
+        "location",
+        "links"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "location": {
+          "$ref": "#/$defs/location"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        }
+      }
+    },
+    "work": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "company",
+        "employmentType",
+        "startDate",
+        "endDate",
+        "location",
+        "summary",
+        "highlights"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "company": {
+          "$ref": "#/$defs/company"
+        },
+        "employmentType": {
+          "enum": [
+            "freelance",
+            "full-time",
+            "part-time",
+            "contract",
+            "internship",
+            "unspecified"
+          ]
+        },
+        "startDate": {
+          "$ref": "#/$defs/month"
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/month"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "location": {
+          "$ref": "#/$defs/location"
+        },
+        "summary": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "highlights": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "education": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "institution",
+        "fieldOfStudy",
+        "startDate",
+        "endDate",
+        "location",
+        "degree"
+      ],
+      "properties": {
+        "institution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fieldOfStudy": {
+          "type": "string"
+        },
+        "startDate": {
+          "$ref": "#/$defs/year"
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/year"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "location": {
+          "$ref": "#/$defs/location"
+        },
+        "degree": {
+          "$ref": "#/$defs/nullableString"
+        }
+      }
+    },
+    "volunteer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "organization",
+        "role",
+        "startDate",
+        "endDate",
+        "location",
+        "highlights"
+      ],
+      "properties": {
+        "organization": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startDate": {
+          "$ref": "#/$defs/year"
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/year"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "location": {
+          "$ref": "#/$defs/location"
+        },
+        "highlights": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

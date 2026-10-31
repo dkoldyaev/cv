@@ -11,13 +11,22 @@
     "type": "git",
     "url": "https://github.com/dkoldyaev/cv.git"
   },
-  "keywords": ["cv", "resume", "markdown", "json-ld"],
+  "keywords": [
+    "cv",
+    "resume",
+    "markdown",
+    "json-ld"
+  ],
   "author": "dkoldyaev",
   "license": "ISC",
   "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "better-sqlite3": "^13.0.3",
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
-    "marked": "^18.1.2"
+    "marked": "^18.1.2",
+    "puppeteer": "^25.16.0",
+    "uuid": "^14.0.3"
   }
 }
