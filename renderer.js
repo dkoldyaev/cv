@@ -20,59 +20,469 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+function slugify(text) {
+  return (text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function parseCountryCode(countryStr) {
+  if (!countryStr) return undefined;
+  const c = countryStr.toLowerCase();
+  if (c.includes('germany') || c.includes('de')) return 'DE';
+  if (c.includes('israel') || c.includes('il')) return 'IL';
+  if (c.includes('russia') || c.includes('ru')) return 'RU';
+  if (c.includes('spain') || c.includes('es')) return 'ES';
+  if (c.includes('usa') || c.includes('us') || c.includes('united states')) return 'US';
+  if (c.includes('uk') || c.includes('gb') || c.includes('united kingdom')) return 'GB';
+  return countryStr;
+}
+
+function parseIsoDate(dateStr) {
+  if (!dateStr) return undefined;
+  const myMatch = dateStr.match(/(\d{1,2})\/(\d{4})/);
+  if (myMatch) {
+    const month = myMatch[1].padStart(2, '0');
+    const year = myMatch[2];
+    return `${year}-${month}`;
+  }
+  const yMatch = dateStr.match(/\b(19\d\d|20\d\d)\b/);
+  if (yMatch) {
+    return yMatch[1];
+  }
+  return dateStr;
+}
+
 function extractTitleAndJsonLd(markdown) {
-  let title = "Curriculum Vitae";
-  let name = "";
-  let jobTitle = "";
+  const parsed = parseCvMarkdown(markdown);
+  const name = parsed.name || "Dmitry Koldyaev";
+  const jobTitle = parsed.title || "Frontend Developer";
+  const intro = parsed.intro || "";
+
+  // Split name into given and family
+  const nameParts = name.trim().split(/\s+/);
+  const givenName = nameParts[0] || "";
+  const familyName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : "";
+
+  // Parse contacts
   let email = "";
   let telephone = "";
-  let address = "";
-  let linkedin = "";
-  let github = "";
+  let locationName = "";
+  let locationAddress = null;
+  const sameAs = [];
+  const contactPoints = [];
 
-  const lines = (markdown || '').split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!name && trimmed.startsWith('# ')) {
-      name = trimmed.replace(/^#\s+/, '').trim();
-    } else if (!jobTitle && trimmed.startsWith('## ') && !trimmed.toLowerCase().includes('work experience') && !trimmed.toLowerCase().includes('skills')) {
-      jobTitle = trimmed.replace(/^##\s+/, '').trim();
+  for (const c of parsed.contacts) {
+    const linkMatch = c.match(/\[([^\]]+)\]\(([^)]+)\)/);
+    const text = c;
+    const label = linkMatch ? linkMatch[1] : text;
+    const href = linkMatch ? linkMatch[2] : text;
+
+    if (text.toLowerCase().includes('email') || href.startsWith('mailto:') || text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)) {
+      const emailMatch = href.replace(/^mailto:/, '').match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/) || label.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      if (emailMatch && !email) email = emailMatch[0];
+    } else if (text.toLowerCase().includes('phone') || href.startsWith('tel:') || text.match(/\+\d[\d\s-]{7,}\d/)) {
+      const phoneClean = (href.replace(/^tel:/, '').match(/\+\d[\d\s-]{7,}\d/) || label.match(/\+\d[\d\s-]{7,}\d/));
+      if (phoneClean && !telephone) telephone = phoneClean[0].replace(/[\s-]/g, '');
+    } else if (text.toLowerCase().includes('location') || text.toLowerCase().includes('barcelona') || text.toLowerCase().includes('spain')) {
+      locationName = label;
+      if (label.includes('Terrassa') && label.includes('Spain')) {
+        locationAddress = {
+          "@type": "PostalAddress",
+          "addressLocality": "Terrassa",
+          "addressRegion": "Barcelona",
+          "addressCountry": "ES"
+        };
+      } else {
+        const parts = label.split(',').map(p => p.trim());
+        locationAddress = {
+          "@type": "PostalAddress",
+          "addressLocality": parts[0] || "",
+          "addressCountry": parts.length > 1 ? parseCountryCode(parts[parts.length - 1]) : ""
+        };
+      }
+    } else if (text.toLowerCase().includes('telegram') || href.includes('t.me/')) {
+      sameAs.push(href);
+      contactPoints.push({
+        "@type": "ContactPoint",
+        "contactType": "Telegram",
+        "url": href
+      });
+    } else if (text.toLowerCase().includes('linkedin') || href.includes('linkedin.com')) {
+      sameAs.push(href);
+    } else if (text.toLowerCase().includes('github') || href.includes('github.com')) {
+      sameAs.push(href);
     }
-    
-    const emailMatch = trimmed.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-    if (!email && emailMatch) email = emailMatch[1];
-
-    const phoneMatch = trimmed.match(/(\+\d[\d\s-]{7,}\d)/);
-    if (!telephone && phoneMatch) telephone = phoneMatch[1];
-
-    const linkedinMatch = trimmed.match(/https?:\/\/(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9-_]+/);
-    if (!linkedin && linkedinMatch) linkedin = linkedinMatch[0];
-
-    const githubMatch = trimmed.match(/https?:\/\/(?:www\.)?github\.com\/[a-zA-Z0-9-_]+/);
-    if (!github && githubMatch) github = githubMatch[0];
   }
 
-  if (name && jobTitle) {
-    title = `${name} - ${jobTitle}`;
-  } else if (name) {
-    title = name;
+  // Parse Languages
+  const languagesSection = parsed.sections.find(s => s.title.toLowerCase().includes('language'));
+  const knowsLanguage = [];
+  const availableLanguages = [];
+  if (languagesSection) {
+    for (const l of languagesSection.lines) {
+      const trimmed = l.trim().replace(/^[-*]\s+/, '');
+      if (!trimmed) continue;
+      const langItems = trimmed.split(',');
+      for (const item of langItems) {
+        const langName = item.trim();
+        if (langName) {
+          availableLanguages.push(langName);
+          let code = 'en';
+          if (langName.toLowerCase().includes('russ')) code = 'ru';
+          else if (langName.toLowerCase().includes('span')) code = 'es';
+          else if (langName.toLowerCase().includes('germ')) code = 'de';
+          else if (langName.toLowerCase().includes('fren')) code = 'fr';
+          knowsLanguage.push({
+            "@type": "Language",
+            "name": langName,
+            "alternateName": code
+          });
+        }
+      }
+    }
   }
+
+  if (email || telephone) {
+    const cp = {
+      "@type": "ContactPoint",
+      "contactType": "professional inquiries"
+    };
+    if (email) cp.email = email;
+    if (telephone) cp.telephone = telephone;
+    if (availableLanguages.length > 0) cp.availableLanguage = availableLanguages;
+    contactPoints.unshift(cp);
+  }
+
+  // Parse Skills
+  const skillsSection = parsed.sections.find(s => s.title.toLowerCase().includes('skill'));
+  const allSkills = [];
+  if (skillsSection) {
+    for (const l of skillsSection.lines) {
+      const trimmed = l.trim().replace(/^[-*]\s+/, '');
+      if (!trimmed) continue;
+      allSkills.push(trimmed);
+    }
+  }
+
+  // Work Experience
+  const workSection = parsed.sections.find(s => s.title.toLowerCase().includes('work') || s.title.toLowerCase().includes('experience'));
+  const orgEntities = [];
+  const roleEntities = [];
+  const jobTitlesSet = new Set();
+  if (jobTitle) jobTitlesSet.add(jobTitle);
+
+  if (workSection) {
+    const rawJobs = [];
+    let curJob = null;
+    for (const line of workSection.lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (trimmed.startsWith('### ')) {
+        if (curJob) rawJobs.push(curJob);
+        curJob = { header: trimmed.replace(/^###\s+/, ''), datesLine: '', intro: '', achievements: [] };
+        continue;
+      }
+      if (!curJob) continue;
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        curJob.achievements.push(trimmed.replace(/^[-*]\s+/, ''));
+      } else if (trimmed.includes('(') && trimmed.includes(')') && !curJob.datesLine && !curJob.intro && !curJob.achievements.length) {
+        curJob.datesLine = trimmed;
+      } else {
+        if (curJob.intro) curJob.intro += ' ' + trimmed;
+        else curJob.intro = trimmed;
+      }
+    }
+    if (curJob) rawJobs.push(curJob);
+
+    for (const j of rawJobs) {
+      let rName = j.header;
+      let compName = "";
+      let compUrl = "";
+      if (j.header.includes(' - ')) {
+        const p = j.header.split(' - ');
+        rName = p[0].trim();
+        const cPart = p.slice(1).join(' - ').trim();
+        const m = cPart.match(/\[([^\]]+)\]\(([^)]+)\)/);
+        if (m) {
+          compName = m[1];
+          compUrl = m[2];
+        } else {
+          compName = cPart;
+        }
+      }
+      jobTitlesSet.add(rName);
+
+      let sDate = "";
+      let eDate = "";
+      let place = "";
+      const datesMatch = j.datesLine.match(/\(([^)]+)\)/);
+      if (datesMatch) {
+        const dParts = datesMatch[1].split('-').map(s => s.trim());
+        if (dParts.length > 0) sDate = parseIsoDate(dParts[0]);
+        if (dParts.length > 1) eDate = parseIsoDate(dParts[1]);
+      }
+      const placeMatch = j.datesLine.replace(/\([^)]+\)/, '').replace(/[*_]/g, '').trim();
+      if (placeMatch) place = placeMatch;
+
+      const compSlug = slugify(compName.replace(/\(.*?\)/g, ''));
+      const orgId = `#org-${compSlug}`;
+      const roleId = `#role-${compSlug}`;
+
+      const orgObj = {
+        "@type": "Organization",
+        "@id": orgId,
+        "name": compName
+      };
+      if (place) {
+        orgObj.location = {
+          "@type": "Place",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": parseCountryCode(place)
+          }
+        };
+      }
+      if (compUrl) {
+        orgObj.url = compUrl;
+      }
+      orgEntities.push(orgObj);
+
+      let desc = j.intro ? j.intro : '';
+      if (j.achievements.length > 0) {
+        if (desc) desc += ' ';
+        desc += `Responsibilities and achievements: ${j.achievements.join(' ')}`;
+      }
+
+      const roleObj = {
+        "@type": "EmployeeRole",
+        "@id": roleId,
+        "roleName": rName,
+        "memberOf": { "@id": orgId },
+        "about": { "@id": "#person" }
+      };
+      if (sDate) roleObj.startDate = sDate;
+      if (eDate) roleObj.endDate = eDate;
+      if (desc) roleObj.description = desc;
+
+      roleEntities.push(roleObj);
+    }
+  }
+
+  // Education
+  const eduSection = parsed.sections.find(s => s.title.toLowerCase().includes('education'));
+  let universityEntity = null;
+  let studyRoleEntity = null;
+  if (eduSection) {
+    const cleanLines = eduSection.lines.map(l => l.trim()).filter(Boolean);
+    let studyTitle = cleanLines[0] ? cleanLines[0].replace(/\*\*/g, '') : "Mathematics and Mechanics";
+    let uniName = "Ural State University";
+    let sYear = "2005";
+    let eYear = "2008";
+    let city = "Yekaterinburg";
+
+    for (const l of cleanLines) {
+      const yearMatch = l.match(/\b(19\d\d|20\d\d)\s*[-–]\s*(19\d\d|20\d\d)\b/);
+      if (yearMatch) {
+        sYear = yearMatch[1];
+        eYear = yearMatch[2];
+        const uPart = l.replace(yearMatch[0], '').replace(/[-–]/g, '').trim();
+        if (uPart) uniName = uPart;
+      } else if (!l.includes('**') && l.length < 30) {
+        city = l;
+      }
+    }
+
+    universityEntity = {
+      "@type": "CollegeOrUniversity",
+      "@id": "#university",
+      "name": uniName,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": city,
+        "addressCountry": "RU"
+      }
+    };
+
+    studyRoleEntity = {
+      "@type": "OrganizationRole",
+      "@id": "#university-study",
+      "alumniOf": { "@id": "#university" },
+      "startDate": sYear,
+      "endDate": eYear,
+      "description": `${studyTitle} studies. Degree completion not stated.`
+    };
+  }
+
+  // Volunteer
+  const volSection = parsed.sections.find(s => s.title.toLowerCase().includes('volunteer'));
+  let volOrgEntity = null;
+  let volRoleEntity = null;
+  if (volSection) {
+    let volTitle = "Biennial of Contemporary Art";
+    let volRole = "Installer and Artist's Assistant (Volunteer)";
+    let sYear = "2012";
+    let eYear = "2019";
+    const volAch = [];
+
+    for (const l of volSection.lines) {
+      const trimmed = l.trim();
+      if (trimmed.startsWith('### ')) volTitle = trimmed.replace(/^###\s+/, '');
+      else if (trimmed.includes('(') && trimmed.includes(')')) {
+        const ym = trimmed.match(/\b(19\d\d|20\d\d)\s*[-–]\s*(19\d\d|20\d\d)\b/);
+        if (ym) {
+          sYear = ym[1];
+          eYear = ym[2];
+        }
+      } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        volAch.push(trimmed.replace(/^[-*]\s+/, ''));
+      } else if (!volAch.length && trimmed) {
+        volRole = `${trimmed} (Volunteer)`;
+      }
+    }
+
+    volOrgEntity = {
+      "@type": "Organization",
+      "@id": "#volunteer-organization",
+      "name": volTitle,
+      "description": `${volTitle} in Yekaterinburg, Russia, where ${name} volunteered from ${sYear} to ${eYear}.`
+    };
+
+    volRoleEntity = {
+      "@type": "OrganizationRole",
+      "@id": "#volunteer-role",
+      "memberOf": { "@id": "#volunteer-organization" },
+      "startDate": sYear,
+      "endDate": eYear,
+      "roleName": volRole,
+      "description": volAch.length > 0 ? volAch.join(' ') : "Assisted exhibition installation and artists and guided accessibility-oriented tours.",
+      "about": { "@id": "#person" }
+    };
+  }
+
+  // Person Entity
+  const personEntity = {
+    "@type": "Person",
+    "@id": "#person",
+    "name": name,
+    "givenName": givenName,
+    "familyName": familyName,
+    "alternateName": "Дмитрий Кольдяев",
+    "mainEntityOfPage": { "@id": "#webpage" },
+    "jobTitle": Array.from(jobTitlesSet),
+    "description": intro || `${jobTitle} with commercial experience.`,
+    "email": email,
+    "telephone": telephone,
+    "sameAs": sameAs,
+    "homeLocation": {
+      "@type": "Place",
+      "name": locationName || "Terrassa, Barcelona, Spain",
+      "address": locationAddress || {
+        "@type": "PostalAddress",
+        "addressLocality": "Terrassa",
+        "addressRegion": "Barcelona",
+        "addressCountry": "ES"
+      }
+    },
+    "contactPoint": contactPoints,
+    "hasOccupation": [
+      {
+        "@type": "Occupation",
+        "name": "Frontend Developer",
+        "description": "Development of user interfaces, client-side web applications, reusable design systems, and high-performance React and Next.js products.",
+        "skills": allSkills
+      },
+      {
+        "@type": "Occupation",
+        "name": "Full Stack Developer",
+        "description": "Development and maintenance of frontend, backend, integration and deployment infrastructure.",
+        "skills": [
+          "PHP",
+          "Symfony",
+          "Python",
+          "Django",
+          "FastAPI",
+          "PostgreSQL",
+          "MySQL",
+          "Redis",
+          "Mercure"
+        ]
+      }
+    ],
+    "skills": allSkills,
+    "knowsAbout": [
+      "Front-end development",
+      "Full-stack web development",
+      "Single-page applications (SPA)",
+      "Progressive web applications (PWA)",
+      "Server-side rendering (SSR)",
+      "Static site generation (SSG)",
+      "Incremental static regeneration (ISR)",
+      "Search engine optimization (SEO)",
+      "Web performance optimization",
+      "Microfrontend architecture",
+      "Design systems and UI component libraries",
+      "Automated unit and integration testing",
+      "Visual regression testing",
+      "Continuous integration and continuous deployment",
+      "No-code and low-code editors",
+      "Drag-and-drop interfaces",
+      "Real-time data synchronization",
+      "Legacy application modernization",
+      "Web application security",
+      "Technical collaboration in Scrum teams"
+    ],
+    "knowsLanguage": knowsLanguage
+  };
+
+  if (universityEntity) {
+    personEntity.alumniOf = { "@id": "#university" };
+  }
+  if (volOrgEntity) {
+    personEntity.memberOf = { "@id": "#volunteer-organization" };
+  }
+
+  // WebSite & WebPage entities
+  const websiteEntity = {
+    "@type": "WebSite",
+    "@id": "#website",
+    "name": `${name} — CV and Portfolio`,
+    "inLanguage": "en",
+    "publisher": { "@id": "#person" }
+  };
+
+  const webpageEntity = {
+    "@type": ["WebPage", "ProfilePage"],
+    "@id": "#webpage",
+    "name": `${name} — ${jobTitle}`,
+    "description": `Professional CV of ${name}, a ${jobTitle.toLowerCase()} and full-stack developer with more than 10 years of commercial experience. Includes work history, technical skills, education, languages and volunteering.`,
+    "inLanguage": "en",
+    "isPartOf": { "@id": "#website" },
+    "mainEntity": { "@id": "#person" },
+    "about": { "@id": "#person" }
+  };
+
+  const graph = [
+    websiteEntity,
+    webpageEntity,
+    personEntity
+  ];
+
+  if (universityEntity) graph.push(universityEntity);
+  if (volOrgEntity) graph.push(volOrgEntity);
+  graph.push(...orgEntities);
+  graph.push(...roleEntities);
+  if (studyRoleEntity) graph.push(studyRoleEntity);
+  if (volRoleEntity) graph.push(volRoleEntity);
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Person",
-    "name": name || "Candidate",
-    "jobTitle": jobTitle || "Professional"
+    "@graph": graph
   };
 
-  if (email) jsonLd.email = `mailto:${email}`;
-  if (telephone) jsonLd.telephone = telephone;
-  const sameAs = [];
-  if (linkedin) sameAs.push(linkedin);
-  if (github) sameAs.push(github);
-  if (sameAs.length > 0) jsonLd.sameAs = sameAs;
-
-  return { title, jsonLd };
+  const pageTitle = name && jobTitle ? `${name} - ${jobTitle}` : name || "Curriculum Vitae";
+  return { title: pageTitle, jsonLd };
 }
 
 function parseCvMarkdown(markdown) {
