@@ -13,35 +13,39 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Initialize root CV in database if not present
+// Initialize root CV in database if not present or migrate existing layout
 function initializeRootCv() {
-  const existing = db.prepare('SELECT id FROM pages WHERE id = ?').get('root');
-  if (!existing) {
-    const cvMdPath = path.join(__dirname, 'cv.md');
-    let mdContent = '';
-    if (fs.existsSync(cvMdPath)) {
-      mdContent = fs.readFileSync(cvMdPath, 'utf8');
-    } else {
-      mdContent = '# Dmitry Koldyaev\n## Frontend Developer\n\nWelcome to my CV.';
-    }
-
-    const { title, jsonLd } = extractTitleAndJsonLd(mdContent);
-    const bodyHtml = marked.parse(mdContent);
-    const fullHtml = renderCvHtml({
-      title,
-      bodyHtml,
-      jsonLd,
-      rawMdUrl: '/cv.md',
-      editUrl: '/admin',
-      id: 'root'
-    });
-
-    db.prepare(`
-      INSERT INTO pages (id, title, markdown, html, json_ld, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `).run('root', title, mdContent, fullHtml, JSON.stringify(jsonLd));
-    console.log('Root CV initialized successfully in SQLite database.');
+  const existing = db.prepare('SELECT id, markdown FROM pages WHERE id = ?').get('root');
+  const cvMdPath = path.join(__dirname, 'cv.md');
+  let mdContent = '';
+  if (fs.existsSync(cvMdPath)) {
+    mdContent = fs.readFileSync(cvMdPath, 'utf8');
+  } else {
+    mdContent = '# Dmitry Koldyaev\n## Frontend Developer\n\nWelcome to my CV.';
   }
+
+  // Always sync root page with current markdown & layout renderer on startup
+  const contentToUse = existing && existing.markdown ? existing.markdown : mdContent;
+  const { title, jsonLd } = extractTitleAndJsonLd(contentToUse);
+  const fullHtml = renderCvHtml({
+    markdown: contentToUse,
+    title,
+    jsonLd,
+    rawMdUrl: '/cv.md',
+    editUrl: '/admin',
+    id: 'root'
+  });
+
+  db.prepare(`
+    INSERT INTO pages (id, title, markdown, html, json_ld, created_at, updated_at)
+    VALUES ('root', ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ON CONFLICT(id) DO UPDATE SET
+      title = excluded.title,
+      html = excluded.html,
+      json_ld = excluded.json_ld,
+      updated_at = CURRENT_TIMESTAMP
+  `).run(title, contentToUse, fullHtml, JSON.stringify(jsonLd));
+  console.log('Root CV initialized/updated successfully in SQLite database.');
 }
 initializeRootCv();
 
@@ -195,10 +199,9 @@ app.post('/api/cv', express.text({ type: ['text/markdown', 'text/plain'] }), (re
 
   const id = crypto.randomBytes(6).toString('hex');
   const { title, jsonLd } = extractTitleAndJsonLd(markdown);
-  const bodyHtml = marked.parse(markdown);
   const fullHtml = renderCvHtml({
+    markdown,
     title,
-    bodyHtml,
     jsonLd,
     rawMdUrl: `/cv/${id}/md`,
     editUrl: `/admin?edit=${id}`,
@@ -438,10 +441,9 @@ app.post('/admin/save', checkAuth, (req, res) => {
   }
 
   const { title, jsonLd } = extractTitleAndJsonLd(markdown);
-  const bodyHtml = marked.parse(markdown);
   const fullHtml = renderCvHtml({
+    markdown,
     title,
-    bodyHtml,
     jsonLd,
     rawMdUrl: id === 'root' ? '/cv.md' : `/cv/${id}/md`,
     editUrl: `/admin?edit=${id}`,
@@ -476,7 +478,11 @@ app.post('/admin/delete', checkAuth, (req, res) => {
 app.post('/api/preview', (req, res) => {
   const { markdown } = req.body;
   const { title, jsonLd } = extractTitleAndJsonLd(markdown || '');
-  const html = marked.parse(markdown || '');
+  const html = renderCvHtml({
+    markdown: markdown || '',
+    title,
+    jsonLd
+  });
   res.json({ title, html, jsonLd });
 });
 
