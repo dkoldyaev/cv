@@ -302,7 +302,7 @@ function renderAdminPage({ editId, allPages, allTokens, allTemplates, activeTemp
         </h3>
         <div id="templatesList">
           ${allTemplates.map(t => `
-            <div class="page-item ${t.id === activeTemplateId ? 'active' : ''}" onclick="selectTemplate('${t.id}')">
+            <div id="tpl-item-${escapeHtml(t.id)}" class="page-item template-item ${t.id === activeTemplateId ? 'active' : ''}" onclick="selectTemplate('${t.id}')">
               <div style="display:flex;align-items:center;gap:6px;">
                 <span class="badge badge-${t.type}">${t.type}</span>
                 <span style="font-size:12px;font-weight:500;">${escapeHtml(t.id)}</span>
@@ -456,6 +456,15 @@ function renderAdminPage({ editId, allPages, allTokens, allTemplates, activeTemp
       currentTemplateId = templateId;
       document.getElementById('activeTemplateBadge').textContent = templateId;
       document.getElementById('templateHeaderId').textContent = templateId;
+
+      // Update active highlight in left sidebar
+      document.querySelectorAll('#templatesList .template-item').forEach(el => {
+        el.classList.remove('active');
+      });
+      const activeEl = document.getElementById('tpl-item-' + templateId);
+      if (activeEl) {
+        activeEl.classList.add('active');
+      }
 
       try {
         const res = await fetch('/api/templates/' + templateId);
