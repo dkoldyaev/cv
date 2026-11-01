@@ -1,0 +1,53 @@
+# <%= name || '' %>
+<% if (headline) { %>## <%= headline %>
+
+<% } else { %>
+<% } %><% if (summary) { %><%= summary.trim() %>
+
+<% } %><% if (contact) { %>### Contact Information
+<% if (contact.email) { %>- Email: [<%= contact.email %>](mailto:<%= contact.email %>)
+<% } %><% if (contact.phone) { %>- Phone: [<%= contact.phone %>](tel:<%= contact.phone.replace(/[\s-]/g, '') %>)
+<% } %><% if (contact.location) { const locParts = [contact.location.city, contact.location.region, contact.location.country].filter(Boolean); const locStr = locParts.join(', '); if (locStr) { %>- Location: [<%= locStr %>](https://maps.google.com)
+<% } } %><% if (Array.isArray(contact.links)) { for (const link of contact.links) { if (link.label && link.url) { if (link.label.toLowerCase() === 'telegram') { %>- Telegram: [<%= link.url.replace(/^https?:\/\/t\.me\//, '@') %>](<%= link.url %>)
+<% } else if (link.label.toLowerCase() === 'linkedin') { %>- LinkedIn: [LinkedIn Profile](<%= link.url %>)
+<% } else { %>- <%= link.label %>: [<%= link.label %> Profile](<%= link.url %>)
+<% } } } } %>
+---
+
+<% } %><% if (Array.isArray(workExperience) && workExperience.length > 0) { %>## Work Experience
+
+<% for (const job of workExperience) { let companyText = job.company?.name || ''; if (job.company?.url) { companyText = `[${job.company.name}](${job.company.url})`; } if (job.employmentType === 'freelance') { companyText += ' (freelance)'; } %>### <%= job.title %> - <%- companyText %>
+<% const start = formatMonth(job.startDate); const end = job.endDate ? formatMonth(job.endDate) : 'Present'; const locParts = [job.location?.city, job.location?.country].filter(Boolean); const locStr = locParts.join(', '); %>*<%- `(${start} - ${end})` %>*<%- locStr ? ` *${locStr}*` : '' %>
+
+<% if (job.summary) { %><%= job.summary.trim() %>
+
+<% } %><% if (Array.isArray(job.highlights) && job.highlights.length > 0) { for (const h of job.highlights) { %>- <%= h %>
+<% } %>
+<% } } %>---
+
+<% } %><% if (Array.isArray(skills) && skills.length > 0) { %>## Skills
+<% for (const s of skills) { %>- <%= s %>
+<% } %>
+---
+
+<% } %><% if (Array.isArray(languages) && languages.length > 0) { %>## Languages
+<% for (const l of languages) { %>- <%= l %>
+<% } %>
+---
+
+<% } %><% if (Array.isArray(education) && education.length > 0) { %>## Education
+<% for (const edu of education) { %><% if (edu.fieldOfStudy) { %>**<%= edu.fieldOfStudy %>**  
+<% } const start = edu.startDate || ''; const end = edu.endDate || ''; const dates = (start && end) ? `${start}-${end}` : (start || end || ''); %><%= edu.institution %><%= dates ? ` - ${dates}` : '' %>  
+<% if (edu.location?.city) { %><%= edu.location.city %>
+
+<% } else { %>
+<% } } %>---
+
+<% } %><% if (Array.isArray(volunteerExperience) && volunteerExperience.length > 0) { %>## Volunteer Experience
+<% for (const vol of volunteerExperience) { %>### <%= vol.organization %>
+<% if (vol.role) { %><%= vol.role %>  
+<% } const start = vol.startDate || ''; const end = vol.endDate || ''; const dates = (start && end) ? `(${start} - ${end})` : ''; const locParts = [vol.location?.city, vol.location?.country].filter(Boolean); %><%= dates ? `*${dates}* ` : '' %><%= locParts.length > 0 ? `*${locParts.join(', ')}*` : '' %>
+
+<% if (Array.isArray(vol.highlights)) { for (const h of vol.highlights) { %>- <%= h %>
+<% } %>
+<% } } } %>

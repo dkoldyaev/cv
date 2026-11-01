@@ -1118,5 +1118,16 @@ ${rightColumnHtml}      </div>
 module.exports = {
   extractTitleAndJsonLd,
   renderCvHtml,
-  escapeHtml
+  escapeHtml,
+  parseCvMarkdown,
+  parseIsoDate,
+  parseCountryCode,
+  slugify,
+  inlineMarkdown,
+  renderWorkExperienceHtml,
+  renderSkillsHtml,
+  renderLanguagesHtml,
+  renderEducationHtml,
+  renderVolunteerHtml,
+  renderContactsHtml
 };

@@ -4,6 +4,7 @@ const crypto = require('crypto');
 
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const PUBLIC_DIR = path.join(DATA_DIR, 'public');
+const TEMPLATES_CUSTOM_DIR = path.join(DATA_DIR, 'templates');
 const TOKENS_FILE = path.join(DATA_DIR, 'tokens.json');
 const METADATA_FILE = path.join(DATA_DIR, 'pages.json');
 
@@ -13,6 +14,9 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 if (!fs.existsSync(PUBLIC_DIR)) {
   fs.mkdirSync(PUBLIC_DIR, { recursive: true });
+}
+if (!fs.existsSync(TEMPLATES_CUSTOM_DIR)) {
+  fs.mkdirSync(TEMPLATES_CUSTOM_DIR, { recursive: true });
 }
 
 // -------------------------------------------------------------
@@ -180,9 +184,66 @@ function readFileContent(id, ext) {
   return fs.readFileSync(fp, 'utf-8');
 }
 
+// -------------------------------------------------------------
+// TEMPLATES STORAGE (data/templates/)
+// -------------------------------------------------------------
+function getTemplateFileName(id) {
+  let clean = id.trim().replace(/[^a-zA-Z0-9._-]/g, '_');
+  if (!clean.endsWith('.ejs')) clean += '.ejs';
+  return clean;
+}
+
+function getTemplatePath(id) {
+  const fn = getTemplateFileName(id);
+  return path.join(TEMPLATES_CUSTOM_DIR, fn);
+}
+
+function hasCustomTemplate(id) {
+  const fp = getTemplatePath(id);
+  return fs.existsSync(fp);
+}
+
+function readTemplateContent(id) {
+  const fp = getTemplatePath(id);
+  if (!fs.existsSync(fp)) return null;
+  return fs.readFileSync(fp, 'utf-8');
+}
+
+function saveTemplateContent(id, content) {
+  const fp = getTemplatePath(id);
+  fs.writeFileSync(fp, content, 'utf-8');
+  return true;
+}
+
+function deleteTemplate(id) {
+  const fp = getTemplatePath(id);
+  if (fs.existsSync(fp)) {
+    try { fs.unlinkSync(fp); return true; } catch (e) { return false; }
+  }
+  return false;
+}
+
+function getCustomTemplatesList() {
+  if (!fs.existsSync(TEMPLATES_CUSTOM_DIR)) return [];
+  const files = fs.readdirSync(TEMPLATES_CUSTOM_DIR);
+  return files.filter(f => f.endsWith('.ejs')).map(f => {
+    const baseId = f.replace(/\.ejs$/, '');
+    let type = 'html';
+    if (baseId.endsWith('.json') || f.includes('.json')) type = 'json';
+    else if (baseId.endsWith('.md') || f.includes('.md')) type = 'md';
+    return {
+      id: baseId,
+      name: baseId,
+      filename: f,
+      type
+    };
+  });
+}
+
 module.exports = {
   DATA_DIR,
   PUBLIC_DIR,
+  TEMPLATES_CUSTOM_DIR,
   // Tokens
   getTokens,
   findToken,
@@ -196,5 +257,12 @@ module.exports = {
   deletePageFiles,
   getFilePath,
   fileExists,
-  readFileContent
+  readFileContent,
+  // Templates
+  getTemplatePath,
+  hasCustomTemplate,
+  readTemplateContent,
+  saveTemplateContent,
+  deleteTemplate,
+  getCustomTemplatesList
 };

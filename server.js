@@ -11,6 +11,8 @@ const { generatePdfFromHtml } = require('./pdf');
 const { jsonToMarkdown } = require('./converter');
 const { generateOpenApiSpec, renderSwaggerUiHtml } = require('./openapi');
 const storage = require('./storage');
+const templater = require('./templater');
+const { renderAdminPage } = require('./admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +41,17 @@ function setNoCache(res) {
 
 app.use((req, res, next) => {
   setNoCache(res);
+  const origSendFile = res.sendFile.bind(res);
+  res.sendFile = function(filePath, options, callback) {
+    let opts = options;
+    let cb = callback;
+    if (typeof options === 'function') {
+      cb = options;
+      opts = {};
+    }
+    opts = Object.assign({ dotfiles: 'allow' }, opts);
+    return origSendFile(filePath, opts, cb);
+  };
   next();
 });
 
@@ -166,7 +179,8 @@ function initializeRootCv() {
     }
 
     const { title, jsonLd } = extractTitleAndJsonLd(mdToUse);
-    const fullHtml = renderCvHtml({
+    const htmlTemplate = templater.getTemplateContent('default.html');
+    const fullHtml = templater.renderHtmlTemplate(htmlTemplate, {
       markdown: mdToUse,
       title,
       jsonLd,
@@ -174,7 +188,8 @@ function initializeRootCv() {
       pdfUrl: '/cv.pdf',
       jsonUrl: '/cv.json',
       id: 'root',
-      showAdmin: false
+      showAdmin: false,
+      jsonData: jsonToUse
     });
 
     storage.savePageFiles({
@@ -408,7 +423,8 @@ app.post('/api/cv', checkApiToken, (req, res) => {
   const proto = req.get('x-forwarded-proto') || req.protocol;
   const baseUrl = `${proto}://${host}`;
 
-  const fullHtml = renderCvHtml({
+  const htmlTemplate = templater.getTemplateContent('default.html');
+  const fullHtml = templater.renderHtmlTemplate(htmlTemplate, {
     markdown,
     title,
     jsonLd,
@@ -416,7 +432,8 @@ app.post('/api/cv', checkApiToken, (req, res) => {
     pdfUrl: `/${id}.pdf`,
     jsonUrl: `/${id}.json`,
     id,
-    showAdmin: false
+    showAdmin: false,
+    jsonData
   });
 
   // Save static files directly to disk
@@ -485,415 +502,24 @@ app.get('/admin', checkAdminAuth, (req, res) => {
 
   const allPages = storage.getAllPages();
   const allTokens = storage.getTokens();
+  const allTemplates = templater.getAllTemplates();
+  const activeTemplateId = req.query.template || (allTemplates.length > 0 ? allTemplates[0].id : 'default.html');
+  const activeTemplateContent = templater.getTemplateContent(activeTemplateId) || '';
 
   // Read current page markdown and JSON if available
   const markdown = storage.readFileContent(editId, '.md') || storage.readFileContent('root', '.md') || '';
   const jsonData = storage.readFileContent(editId, '.json') || storage.readFileContent('root', '.json') || '';
 
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>CV Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f4f6f8;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-    header {
-      background: #1a202c;
-      color: white;
-      padding: 12px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .header-title {
-      font-size: 18px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .header-links a {
-      color: #cbd5e0;
-      text-decoration: none;
-      margin-left: 16px;
-      font-size: 14px;
-    }
-    .header-links a:hover {
-      color: white;
-    }
-    .main {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .sidebar {
-      width: 320px;
-      background: white;
-      border-right: 1px solid #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-    .sidebar-section {
-      padding: 16px;
-      border-bottom: 1px solid #edf2f7;
-    }
-    .sidebar-section h3 {
-      margin: 0 0 12px 0;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #718096;
-    }
-    .page-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      margin-bottom: 4px;
-      border-radius: 6px;
-      font-size: 13px;
-      text-decoration: none;
-      color: #2d3748;
-      background: #f7fafc;
-      border: 1px solid transparent;
-    }
-    .page-item:hover {
-      background: #edf2f7;
-    }
-    .page-item.active {
-      background: #ebf8ff;
-      border-color: #bee3f8;
-      color: #2b6cb0;
-      font-weight: 600;
-    }
-    .editor-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .toolbar {
-      padding: 10px 20px;
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .tabs {
-      display: flex;
-      gap: 8px;
-    }
-    .tab-btn {
-      padding: 6px 14px;
-      border: 1px solid #e2e8f0;
-      background: #f7fafc;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .tab-btn.active {
-      background: #3182ce;
-      color: white;
-      border-color: #3182ce;
-    }
-    .workspace {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .pane {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 16px;
-      overflow: hidden;
-    }
-    textarea {
-      flex: 1;
-      width: 100%;
-      border: 1px solid #cbd5e0;
-      border-radius: 6px;
-      padding: 12px;
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 13px;
-      line-height: 1.5;
-      resize: none;
-      outline: none;
-    }
-    textarea:focus {
-      border-color: #3182ce;
-      box-shadow: 0 0 0 1px #3182ce;
-    }
-    iframe {
-      flex: 1;
-      border: 1px solid #cbd5e0;
-      border-radius: 6px;
-      background: white;
-    }
-    .btn {
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-primary {
-      background: #3182ce;
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #2b6cb0;
-    }
-    .btn-secondary {
-      background: #edf2f7;
-      color: #4a5568;
-    }
-    .btn-secondary:hover {
-      background: #e2e8f0;
-    }
-    .btn-danger {
-      background: #fff5f5;
-      color: #e53e3e;
-      border: 1px solid #feb2b2;
-    }
-    .btn-danger:hover {
-      background: #fed7d7;
-    }
-    .token-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid #edf2f7;
-      font-size: 12px;
-    }
-    .token-key {
-      font-family: monospace;
-      background: #edf2f7;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 11px;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="header-title">
-      📄 <span>CV Management Dashboard (Static Files)</span>
-    </div>
-    <div class="header-links">
-      <a href="/api/docs" target="_blank" style="color: #68d391; font-weight: 500;">📖 OpenAPI Docs ↗</a>
-      <a href="${editId === 'root' ? '/' : `/${editId}`}" target="_blank">View Live CV ↗</a>
-      <a href="${editId === 'root' ? '/cv.pdf' : `/${editId}.pdf`}" target="_blank">PDF ↗</a>
-      <a href="${editId === 'root' ? '/cv.md' : `/${editId}.md`}" target="_blank">Markdown ↗</a>
-      <a href="${editId === 'root' ? '/cv.json' : `/${editId}.json`}" target="_blank">JSON ↗</a>
-      <a href="/admin/logout">Logout</a>
-    </div>
-  </header>
-
-  <div class="main">
-    <div class="sidebar">
-      <div class="sidebar-section">
-        <h3>CV Pages (${allPages.length})</h3>
-        ${allPages.map(p => `
-          <a href="/admin?edit=${p.id}" class="page-item ${p.id === editId ? 'active' : ''}">
-            <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              <div><strong>${p.id === 'root' ? '★ Main CV (root)' : p.id.substring(0, 8) + '...'}</strong></div>
-              <small style="color: #a0aec0;">${p.title}</small>
-            </div>
-            ${p.id !== 'root' ? `<button onclick="event.preventDefault(); deletePage('${p.id}')" style="background:none;border:none;color:#e53e3e;cursor:pointer;">✕</button>` : ''}
-          </a>
-        `).join('')}
-      </div>
-
-      <div class="sidebar-section">
-        <h3>API Tokens</h3>
-        <div id="tokensList">
-          ${allTokens.map(t => `
-            <div class="token-row">
-              <div>
-                <div><strong>${t.name}</strong></div>
-                <div class="token-key">${t.token.substring(0, 14)}...</div>
-              </div>
-              <button onclick="deleteToken('${t.token}')" style="background:none;border:none;color:#e53e3e;cursor:pointer;">✕</button>
-            </div>
-          `).join('')}
-        </div>
-        <div style="margin-top: 12px;">
-          <input type="text" id="newTokenName" placeholder="Client Name" style="width:100%;padding:6px;border:1px solid #cbd5e0;border-radius:4px;font-size:12px;margin-bottom:6px;">
-          <button onclick="createToken()" class="btn btn-secondary" style="width:100%;font-size:12px;justify-content:center;">+ Generate New Token</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="editor-container">
-      <div class="toolbar">
-        <div class="tabs">
-          <button id="tabMd" class="tab-btn active" onclick="switchTab('md')">Markdown Editor</button>
-          <button id="tabJson" class="tab-btn" onclick="switchTab('json')">JSON Data</button>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button id="btnConvert" class="btn btn-secondary" onclick="convertJsonToMarkdown()" style="display:none;">Convert JSON → Markdown</button>
-          <button class="btn btn-primary" onclick="saveCv()">💾 Save CV</button>
-        </div>
-      </div>
-
-      <div class="workspace">
-        <div class="pane">
-          <textarea id="markdownEditor" spellcheck="false" placeholder="Write markdown here...">${escapeHtml(markdown)}</textarea>
-          <textarea id="jsonEditor" spellcheck="false" style="display:none;" placeholder="Paste CV JSON here...">${escapeHtml(jsonData)}</textarea>
-        </div>
-        <div class="pane">
-          <iframe id="previewFrame" src="about:blank"></iframe>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const currentId = '${editId}';
-    let currentTab = 'md';
-
-    function switchTab(tab) {
-      currentTab = tab;
-      const mdEditor = document.getElementById('markdownEditor');
-      const jsonEditor = document.getElementById('jsonEditor');
-      const tabMd = document.getElementById('tabMd');
-      const tabJson = document.getElementById('tabJson');
-      const btnConvert = document.getElementById('btnConvert');
-
-      if (tab === 'md') {
-        mdEditor.style.display = 'block';
-        jsonEditor.style.display = 'none';
-        tabMd.classList.add('active');
-        tabJson.classList.remove('active');
-        btnConvert.style.display = 'none';
-        updatePreview();
-      } else {
-        mdEditor.style.display = 'none';
-        jsonEditor.style.display = 'block';
-        tabJson.classList.add('active');
-        tabMd.classList.remove('active');
-        btnConvert.style.display = 'inline-flex';
-      }
-    }
-
-    async function convertJsonToMarkdown() {
-      const jsonText = document.getElementById('jsonEditor').value;
-      try {
-        const parsed = JSON.parse(jsonText);
-        const res = await fetch('/api/convert/json-to-md', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(parsed)
-        });
-        const data = await res.json();
-        if (data.markdown) {
-          document.getElementById('markdownEditor').value = data.markdown;
-          switchTab('md');
-          updatePreview();
-        }
-      } catch (e) {
-        alert('Invalid JSON: ' + e.message);
-      }
-    }
-
-    let previewDebounce = null;
-    function updatePreview() {
-      clearTimeout(previewDebounce);
-      previewDebounce = setTimeout(async () => {
-        const md = document.getElementById('markdownEditor').value;
-        try {
-          const res = await fetch('/api/preview', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ markdown: md })
-          });
-          const data = await res.json();
-          const doc = document.getElementById('previewFrame').contentWindow.document;
-          doc.open();
-          doc.write(data.html);
-          doc.close();
-        } catch (e) {
-          console.error(e);
-        }
-      }, 300);
-    }
-
-    document.getElementById('markdownEditor').addEventListener('input', updatePreview);
-    updatePreview();
-
-    async function saveCv() {
-      const markdown = document.getElementById('markdownEditor').value;
-      const jsonText = document.getElementById('jsonEditor').value;
-      let jsonData = null;
-      if (jsonText.trim()) {
-        try { jsonData = JSON.parse(jsonText); } catch (e) {}
-      }
-
-      const res = await fetch('/admin/save?id=' + currentId, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markdown, json_data: jsonData })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert('CV saved successfully!');
-        window.location.reload();
-      } else {
-        alert('Error saving CV: ' + (data.error || 'Unknown error'));
-      }
-    }
-
-    async function deletePage(id) {
-      if (!confirm('Are you sure you want to delete CV ' + id + '?')) return;
-      const res = await fetch('/admin/delete?id=' + id, { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        window.location.href = '/admin';
-      }
-    }
-
-    async function createToken() {
-      const name = document.getElementById('newTokenName').value.trim() || 'API Key';
-      const res = await fetch('/api/tokens', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-      const data = await res.json();
-      if (data.token) {
-        prompt('Copy your new API token:', data.token);
-        window.location.reload();
-      }
-    }
-
-    async function deleteToken(token) {
-      if (!confirm('Delete this token?')) return;
-      await fetch('/api/tokens/' + token, { method: 'DELETE' });
-      window.location.reload();
-    }
-  </script>
-</body>
-</html>`;
+  const html = renderAdminPage({
+    editId,
+    allPages,
+    allTokens,
+    allTemplates,
+    activeTemplateId,
+    activeTemplateContent,
+    markdown,
+    jsonData
+  });
 
   res.send(html);
 });
@@ -918,7 +544,8 @@ app.post('/admin/save', checkAdminAuth, (req, res) => {
   }
 
   const { title, jsonLd } = extractTitleAndJsonLd(markdown);
-  const fullHtml = renderCvHtml({
+  const htmlTemplate = templater.getTemplateContent('default.html');
+  const fullHtml = templater.renderHtmlTemplate(htmlTemplate, {
     markdown,
     title,
     jsonLd,
@@ -926,7 +553,8 @@ app.post('/admin/save', checkAdminAuth, (req, res) => {
     pdfUrl: id === 'root' ? '/cv.pdf' : `/${id}.pdf`,
     jsonUrl: id === 'root' ? '/cv.json' : `/${id}.json`,
     id,
-    showAdmin: false
+    showAdmin: false,
+    jsonData: json_data || null
   });
 
   storage.savePageFiles({
@@ -951,12 +579,113 @@ app.post('/admin/delete', checkAdminAuth, (req, res) => {
   res.json({ success: true });
 });
 
+// -------------------------------------------------------------
+// TEMPLATES API ENDPOINTS
+// -------------------------------------------------------------
+app.get('/api/templates', checkAdminAuth, (req, res) => {
+  setNoCache(res);
+  res.json({ templates: templater.getAllTemplates() });
+});
+
+// Dynamic template live preview
+app.post('/api/templates/preview', checkAdminAuth, (req, res) => {
+  setNoCache(res);
+  const { templateId, templateContent, markdown, jsonData } = req.body;
+  const tplId = templateId || 'default.html';
+
+  let cvData = jsonData;
+  if (!cvData) {
+    const rootJsonStr = storage.readFileContent('root', '.json');
+    if (rootJsonStr) {
+      try { cvData = JSON.parse(rootJsonStr); } catch (e) {}
+    }
+    if (!cvData && fs.existsSync(path.join(__dirname, 'cv.json'))) {
+      try { cvData = JSON.parse(fs.readFileSync(path.join(__dirname, 'cv.json'), 'utf-8')); } catch (e) {}
+    }
+  }
+
+  const rawMd = markdown || (cvData ? jsonToMarkdown(cvData) : storage.readFileContent('root', '.md') || '');
+
+  try {
+    const content = templateContent !== undefined ? templateContent : templater.getTemplateContent(tplId);
+
+    if (tplId.endsWith('.html') || tplId.includes('html')) {
+      const { title, jsonLd } = extractTitleAndJsonLd(rawMd);
+      const rendered = templater.renderHtmlTemplate(content, {
+        markdown: rawMd,
+        title,
+        jsonLd,
+        rawMdUrl: '/cv.md',
+        pdfUrl: '/cv.pdf',
+        jsonUrl: '/cv.json',
+        jsonData: cvData
+      });
+      return res.json({ type: 'html', rendered });
+    } else if (tplId.endsWith('.json') || tplId.includes('json')) {
+      const rendered = templater.renderJsonTemplate(content, cvData || {});
+      return res.json({ type: 'json', rendered });
+    } else {
+      const rendered = templater.renderMarkdownTemplate(content, cvData || {});
+      return res.json({ type: 'md', rendered });
+    }
+  } catch (err) {
+    return res.status(400).json({ error: 'Rendering error: ' + err.message, rendered: 'Error: ' + err.message });
+  }
+});
+
+app.get('/api/templates/:id', checkAdminAuth, (req, res) => {
+  setNoCache(res);
+  const id = req.params.id;
+  const content = templater.getTemplateContent(id);
+  if (content === null) {
+    return res.status(404).json({ error: 'Template not found' });
+  }
+  res.json({ id, content });
+});
+
+app.post('/api/templates/:id/reset', checkAdminAuth, (req, res) => {
+  setNoCache(res);
+  const id = req.params.id;
+  const defaultContent = templater.resetTemplate(id);
+  res.json({ success: true, id, content: defaultContent });
+});
+
+app.post('/api/templates/:id', checkAdminAuth, (req, res) => {
+  setNoCache(res);
+  const id = req.params.id;
+  const { content } = req.body;
+  if (typeof content !== 'string') {
+    return res.status(400).json({ error: 'Template content must be a string' });
+  }
+
+  // Validate syntax by doing a test render with cv.json or dummy data
+  try {
+    const cvJson = storage.readFileContent('root', '.json') || fs.readFileSync(path.join(__dirname, 'cv.json'), 'utf-8');
+    const parsedData = typeof cvJson === 'string' ? JSON.parse(cvJson) : cvJson;
+    const testMd = storage.readFileContent('root', '.md') || fs.readFileSync(path.join(__dirname, 'cv.md'), 'utf-8');
+
+    if (id.endsWith('.html') || id.includes('html')) {
+      templater.renderHtmlTemplate(content, { markdown: testMd, jsonData: parsedData });
+    } else if (id.endsWith('.json') || id.includes('json')) {
+      templater.renderJsonTemplate(content, parsedData);
+    } else {
+      templater.renderMarkdownTemplate(content, parsedData);
+    }
+  } catch (err) {
+    return res.status(400).json({ error: 'Template compilation error: ' + err.message });
+  }
+
+  templater.saveTemplateContent(id, content);
+  res.json({ success: true, id });
+});
+
 // Admin live preview API
 app.post('/api/preview', (req, res) => {
   setNoCache(res);
   const { markdown } = req.body;
   const { title, jsonLd } = extractTitleAndJsonLd(markdown || '');
-  const html = renderCvHtml({
+  const htmlTemplate = templater.getTemplateContent('default.html');
+  const html = templater.renderHtmlTemplate(htmlTemplate, {
     markdown: markdown || '',
     title,
     jsonLd

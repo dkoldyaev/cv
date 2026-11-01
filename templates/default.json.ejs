@@ -1,0 +1,20 @@
+{
+  "name": <%- JSON.stringify(name || '') %>,
+  "headline": <%- JSON.stringify(headline || '') %>,
+  "summary": <%- JSON.stringify(summary || '') %>,
+  "contact": {
+    "email": <%- JSON.stringify(contact && contact.email ? contact.email : '') %>,
+    "phone": <%- JSON.stringify(contact && contact.phone ? contact.phone : '') %>,
+    "location": {
+      "city": <%- contact && contact.location && contact.location.city ? JSON.stringify(contact.location.city) : 'null' %>,
+      "region": <%- contact && contact.location && contact.location.region ? JSON.stringify(contact.location.region) : 'null' %>,
+      "country": <%- contact && contact.location && contact.location.country ? JSON.stringify(contact.location.country) : 'null' %>
+    },
+    "links": <%- JSON.stringify(contact && contact.links ? contact.links : [], null, 4).replace(/\n/g, '\n    ') %>
+  },
+  "workExperience": <%- JSON.stringify(workExperience || [], null, 2).replace(/\n/g, '\n  ') %>,
+  "skills": <%- JSON.stringify(skills || [], null, 2).replace(/\n/g, '\n  ') %>,
+  "languages": <%- JSON.stringify(languages || [], null, 2).replace(/\n/g, '\n  ') %>,
+  "education": <%- JSON.stringify(education || [], null, 2).replace(/\n/g, '\n  ') %>,
+  "volunteerExperience": <%- JSON.stringify(volunteerExperience || [], null, 2).replace(/\n/g, '\n  ') %>
+}
